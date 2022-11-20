@@ -257,28 +257,28 @@ if __name__ == "__main__":
     urlList=[]
     driver = webdriver.Chrome(service=service)
     #looping through 1 to 8 pages for collecting over 300 products
-    # for i in range(1,9):
-    #     #navigate to the url
-    #     driver.get(f'https://shop.adidas.jp/item/?gender=mens&category=wear&group=tops&page={i}')
-    #     #for smooth scroll
-    #     driver.execute_script("window.scrollTo(0,document.body.scrollHeight)")
-    #     total_height = int(driver.execute_script("return document.body.scrollHeight"))
-    #     for i in range(1, total_height, 5):
-    #         driver.execute_script("window.scrollTo(0, {});".format(i)) 
-    #     time.sleep(5)
-    #     #Get all html elemnt
-    #     html = driver.page_source
+    for i in range(1,9):
+        #navigate to the url
+        driver.get(f'https://shop.adidas.jp/item/?gender=mens&category=wear&group=tops&page={i}')
+        #for smooth scroll
+        driver.execute_script("window.scrollTo(0,document.body.scrollHeight)")
+        total_height = int(driver.execute_script("return document.body.scrollHeight"))
+        for i in range(1, total_height, 5):
+            driver.execute_script("window.scrollTo(0, {});".format(i)) 
+        time.sleep(5)
+        #Get all html elemnt
+        html = driver.page_source
 
-    #     #beautifulsoup 
-    #     soup = bs(html, 'html.parser')
-    #     linkelement=soup.find_all('div', attrs={"class":"articleDisplayCard-children"})
+        #beautifulsoup 
+        soup = bs(html, 'html.parser')
+        linkelement=soup.find_all('div', attrs={"class":"articleDisplayCard-children"})
         
-    #     for ele in linkelement:
-    #         temp=ele.find_all('a')
-    #         url=temp[0]['href']
-    #         getPageInformation(url)
-    #         urlList.append(url)
-    getPageInformation('products/DH5798/')
+        for ele in linkelement:
+            temp=ele.find_all('a')
+            url=temp[0]['href']
+            getPageInformation(url)
+            urlList.append(url)
+    
         
          
   
