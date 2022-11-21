@@ -1,11 +1,8 @@
 from selenium.webdriver.chrome.service import Service
 from selenium import webdriver
-from selenium.webdriver.common.by import By
- 
+  
 from bs4 import BeautifulSoup as bs
-from selenium.webdriver.support.ui import WebDriverWait
 import time
-from lxml import etree
 import pandas as pd
 
 #initialize web driver (you need to give absolute path for chormedriver.exe)
@@ -29,7 +26,6 @@ def getPageInformation(url):
         #beautifulsoup 
         soup = bs(html, 'html.parser')
     
-        dom = etree.HTML(str(soup))
       
         #get size table data
         table_body=soup.find_all('table', attrs={"class":"sizeChartTable"})
@@ -55,8 +51,14 @@ def getPageInformation(url):
         breadcrumpList=[]
         
         for ele in breadcrrumbList:
-        
-            breadcrumpList.append(ele.text)
+            temp=ele.text
+            print(temp)
+            if "iconArrowCircleLeft" in temp:
+                x=temp.replace("iconArrowCircleLeft"," ")
+                print(x,"found")
+                breadcrumpList.append(x)
+            else:
+                breadcrumpList.append(temp)
         #Get Catagory  
         catagory=soup.find_all('span', attrs={"class":"categoryName test-categoryName"  })
         catagoryText=""
@@ -251,7 +253,6 @@ def getPageInformation(url):
         print(f"Error for product {url}")
         driver.quit()
  
- 
 
 if __name__ == "__main__":
     urlList=[]
@@ -278,6 +279,7 @@ if __name__ == "__main__":
             url=temp[0]['href']
             getPageInformation(url)
             urlList.append(url)
+
     
         
          
