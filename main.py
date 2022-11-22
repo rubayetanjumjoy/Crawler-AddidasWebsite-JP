@@ -52,10 +52,10 @@ def getPageInformation(url):
         
         for ele in breadcrrumbList:
             temp=ele.text
-            print(temp)
+            
             if "iconArrowCircleLeft" in temp:
                 x=temp.replace("iconArrowCircleLeft"," ")
-                print(x,"found")
+                
                 breadcrumpList.append(x)
             else:
                 breadcrumpList.append(temp)
@@ -138,12 +138,17 @@ def getPageInformation(url):
                  keywordlist.append(ele.text)
         else:
             keywordlist.append({"KeyWords":"None"})
-
+        
+        #get product id 
+        productID=url.replace("products/","")
+        productID=productID.replace("/","")
+       
         df2 = pd.DataFrame([{"breadcrrumb(Catagory)":"/".join(breadcrumpList),"Catagory":catagoryText,"product name":productText,"pirce":pricetext,"Available size": sizelist,
         "Product Image URL":imageurlList if imageurlList else "None", "Title of Description":title[0].text,"Description":description[0].text,"Special Function Description": specialfunDes,
         "Rating":rating,"Number Of Reviews": numberOfReviews,"Recommended Rate":recommendRate ,"Keywords":keywordlist
         
         }]) 
+        df2["Product_ID"]=productID 
         #get cordination product
         coordinateElemnts=soup.select("li.css-1gzdh76")
         coordinateProduct=[]
@@ -234,9 +239,10 @@ def getPageInformation(url):
             commentList.append({"Comment":"None"})
         comment=pd.DataFrame(commentList)
 
-        
-
-
+        df['Product_ID']=productID
+        coordinate['Product_ID']=productID
+        rating['Product_ID']=productID
+        comment['Product_ID']=productID
 
         filename=url.replace("/","_")
         with pd.ExcelWriter(f"./Products/{filename}.xlsx", engine='xlsxwriter') as writer:    
@@ -255,30 +261,33 @@ def getPageInformation(url):
  
 
 if __name__ == "__main__":
-    urlList=[]
-    driver = webdriver.Chrome(service=service)
+   
+    
     #looping through 1 to 8 pages for collecting over 300 products
-    for i in range(1,9):
-        #navigate to the url
-        driver.get(f'https://shop.adidas.jp/item/?gender=mens&category=wear&group=tops&page={i}')
-        #for smooth scroll
-        driver.execute_script("window.scrollTo(0,document.body.scrollHeight)")
-        total_height = int(driver.execute_script("return document.body.scrollHeight"))
-        for i in range(1, total_height, 5):
-            driver.execute_script("window.scrollTo(0, {});".format(i)) 
-        time.sleep(5)
-        #Get all html elemnt
-        html = driver.page_source
+    # for i in range(1,9):
+    #     #navigate to the url
+    #     driver = webdriver.Chrome(service=service)
+    #     driver.get(f'https://shop.adidas.jp/item/?gender=mens&category=wear&group=tops&page={i}')
+    #     #for smooth scroll
+    #     driver.execute_script("window.scrollTo(0,document.body.scrollHeight)")
+    #     total_height = int(driver.execute_script("return document.body.scrollHeight"))
+    #     for i in range(1, total_height, 5):
+    #         driver.execute_script("window.scrollTo(0, {});".format(i)) 
+    #     time.sleep(5)
+    #     #Get all html elemnt
+    #     html = driver.page_source
 
-        #beautifulsoup 
-        soup = bs(html, 'html.parser')
-        linkelement=soup.find_all('div', attrs={"class":"articleDisplayCard-children"})
+    #     #beautifulsoup 
+    #     soup = bs(html, 'html.parser')
+    #     linkelement=soup.find_all('div', attrs={"class":"articleDisplayCard-children"})
         
-        for ele in linkelement:
-            temp=ele.find_all('a')
-            url=temp[0]['href']
-            getPageInformation(url)
-            urlList.append(url)
+    #     for ele in linkelement:
+    #         temp=ele.find_all('a')
+    #         url=temp[0]['href']
+    #         getPageInformation(url)
+        getPageInformation('products/HB9386/')
+            
+      
 
     
         
