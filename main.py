@@ -4,7 +4,7 @@ from selenium import webdriver
 from bs4 import BeautifulSoup as bs
 import time
 import pandas as pd
-
+import openpyxl
 #initialize web driver (you need to give absolute path for chormedriver.exe)
 service = Service(executable_path=r"C:\Users\Rubayet Anjum Joy\.cache\selenium\chromedriver\win32\107.0.5304.62\chromedriver.exe")
 
@@ -22,7 +22,9 @@ def getPageInformation(url):
         time.sleep(5)
         #Get all html elemnt
         html = driver.page_source
-
+        #get product id 
+        productID=url.replace("products/","")
+        productID=productID.replace("/","")
         #beautifulsoup 
         soup = bs(html, 'html.parser')
     
@@ -42,8 +44,14 @@ def getPageInformation(url):
             
             cols = [ele.text.strip() for ele in cols]
             data.append([ele for ele in cols if ele]) 
+        #inserting index in data array
+        for i in range(len(data)):
+            data[i].insert(0,list[i])
+        for i in range(len(data)):
+            data[i].insert(0,productID)
+             
    
-        df = pd.DataFrame(data,index=list) 
+        df = pd.DataFrame(data) 
         
 
         #get breadcrrumbList
@@ -139,16 +147,14 @@ def getPageInformation(url):
         else:
             keywordlist.append({"KeyWords":"None"})
         
-        #get product id 
-        productID=url.replace("products/","")
-        productID=productID.replace("/","")
+      
        
-        df2 = pd.DataFrame([{"breadcrrumb(Catagory)":"/".join(breadcrumpList),"Catagory":catagoryText,"product name":productText,"pirce":pricetext,"Available size": sizelist,
-        "Product Image URL":imageurlList if imageurlList else "None", "Title of Description":title[0].text,"Description":description[0].text,"Special Function Description": specialfunDes,
-        "Rating":rating,"Number Of Reviews": numberOfReviews,"Recommended Rate":recommendRate ,"Keywords":keywordlist
+        df2 = pd.DataFrame([{"breadcrrumb(Catagory)":"/".join(breadcrumpList),"Catagory":catagoryText,"product name":productText,"pirce":pricetext,"Available size": " , ".join(sizelist),
+        "Product Image URL":" , ".join(imageurlList), "Title of Description":title[0].text,"Description":description[0].text,"Special Function Description": specialfunDes,
+        "Rating":rating,"Number Of Reviews": numberOfReviews,"Recommended Rate":recommendRate ,"Keywords":" , ".join(keywordlist),"product_ID":productID
         
         }]) 
-        df2["Product_ID"]=productID 
+         
         #get cordination product
         coordinateElemnts=soup.select("li.css-1gzdh76")
         coordinateProduct=[]
@@ -175,7 +181,7 @@ def getPageInformation(url):
             
             ratingList.append("Sense Of Fitting "+fit)
         else:
-            ratingList.append("None")
+            ratingList.append({"Sense Of Fitting":"None","Appropriation of length":"None","Quality of Material":"None","Comfort":"None"})
         #Get Length
     
         lengthElement=soup.select('div.BVRRCustomRatingEntryWrapper:nth-child(1) > div:nth-child(2) > div:nth-child(2) > div:nth-child(2) > img:nth-child(1)')
@@ -187,7 +193,7 @@ def getPageInformation(url):
             
             ratingList.append("Appropriation of length "+length)
         else:
-            ratingList.append("None")
+            ratingList.append({"Sense Of Fitting":"None","Appropriation of length":"None","Quality of Material":"None","Comfort":"None"})
         #Get quality of material
     
         qualityelement=soup.select('div.BVRRCustomRatingEntryWrapper:nth-child(2) > div:nth-child(1) > div:nth-child(2) > div:nth-child(2) > img:nth-child(1)')
@@ -199,7 +205,7 @@ def getPageInformation(url):
             
             ratingList.append("Quality of Material "+quality)
         else:
-            ratingList.append("None")
+            ratingList.append({"Sense Of Fitting":"None","Appropriation of length":"None","Quality of Material":"None","Comfort":"None"})
         #Get Comfort
     
         comforElement=soup.select('div.BVRRCustomRatingEntryWrapper:nth-child(2) > div:nth-child(2) > div:nth-child(2) > div:nth-child(2) > img:nth-child(1)')
@@ -211,7 +217,7 @@ def getPageInformation(url):
             
             ratingList.append("Comfort "+comfort)
         else:
-            ratingList.append("None")
+            ratingList.append({"Sense Of Fitting":"None","Appropriation of length":"None","Quality of Material":"None","Comfort":"None"})
 
 
         rating= pd.DataFrame({"Rating":ratingList}) 
@@ -239,21 +245,52 @@ def getPageInformation(url):
             commentList.append({"Comment":"None"})
         comment=pd.DataFrame(commentList)
 
-        df['Product_ID']=productID
+       
         coordinate['Product_ID']=productID
         rating['Product_ID']=productID
         comment['Product_ID']=productID
 
         filename=url.replace("/","_")
-        with pd.ExcelWriter(f"./Products/{filename}.xlsx", engine='xlsxwriter') as writer:    
-            df2.to_excel(writer, 'Product Page Informations')   
-            df.to_excel(writer, 'Size')   
-            coordinate.to_excel(writer, 'Coordinate Product')  
-            rating.to_excel(writer, 'Rating')  
-            comment.to_excel(writer, 'Comment')    
+        # with pd.ExcelWriter(f"./Products/{filename}.xlsx", engine='xlsxwriter') as writer:    
+        #     df2.to_excel(writer, 'Product Page Informations')   
+        #     df.to_excel(writer, 'Size')   
+        #     coordinate.to_excel(writer, 'Coordinate Product')  
+        #     rating.to_excel(writer, 'Rating')  
+        #     comment.to_excel(writer, 'Comment')    
         
             
-            writer.save() 
+        #     writer.save() 
+        wb = openpyxl.load_workbook('Product_Information.xlsx') # open old file
+        ws = wb["Product Page Informations"] # assign sheet to work with or as below
+        wr = wb["Rating"]
+        wsize = wb["Size"]
+        wcordinate = wb["Coordinate Product"]
+        wcomment = wb["Comment"]
+        
+        # ws = wb.active
+        #appending product page infromation sheet
+        for index, row in df2.iterrows():
+            print(row)
+            ws.append(row.values.tolist())
+        #appending rating sheet
+        for index, row in rating.iterrows():
+            print(row)
+            wr.append(row.values.tolist())
+        #appending size sheet
+        for index, row in df.iterrows():
+            print(row)
+            wsize.append(row.values.tolist())
+        #appending coordinate product sheet
+        for index, row in coordinate.iterrows():
+            print(row)
+            wcordinate.append(row.values.tolist())
+        #appending comment product sheet
+        for index, row in comment.iterrows():
+            print(row)
+            wcomment.append(row.values.tolist())
+
+        wb.save("Product_Information.xlsx")
+        
         driver.quit()
     except:
         print(f"Error for product {url}")
@@ -261,31 +298,59 @@ def getPageInformation(url):
  
 
 if __name__ == "__main__":
-   
+    count=0
+    df = pd.DataFrame(columns=["breadcrrumb(Catagory)","Catagory","product name","pirce","Available size","Product Image URL","Title of Description","Description","Special Function Description"
+                          , "Rating","Number Of Reviews","Recommended Rate","Keywords","Product_ID"
+                           ])
+    newdf=df.set_index('breadcrrumb(Catagory)') 
+    coordProd = pd.DataFrame(columns=["Coordinated Product Name","price","image link","Product_ID"])
+    newCroodpord=coordProd.set_index("Coordinated Product Name") 
+
+    rating = pd.DataFrame(columns=["Rating","Product_ID"])
+    newRating=rating.set_index("Rating") 
+
+    comment = pd.DataFrame(columns=["Username","Rating Of User","Comment Title","Comment Description","Date","Product_ID"])
+    newCommnet=comment.set_index("Username") 
+
+    size=pd.DataFrame(columns=["Product_ID"])
+    newsize=size.set_index('Product_ID')
+    
+    
+    writer = pd.ExcelWriter('Product_Information.xlsx', engine='xlsxwriter')
+    with writer as writer:
+        newdf.to_excel(writer, sheet_name='Product Page Informations')
+        newsize.to_excel(writer, sheet_name='Size')
+        newCroodpord.to_excel(writer, sheet_name='Coordinate Product')
+        newRating.to_excel(writer, sheet_name='Rating')
+        newCommnet.to_excel(writer, sheet_name='Comment')
+    writer.save() 
+        
     
     #looping through 1 to 8 pages for collecting over 300 products
-    # for i in range(1,9):
-    #     #navigate to the url
-    #     driver = webdriver.Chrome(service=service)
-    #     driver.get(f'https://shop.adidas.jp/item/?gender=mens&category=wear&group=tops&page={i}')
-    #     #for smooth scroll
-    #     driver.execute_script("window.scrollTo(0,document.body.scrollHeight)")
-    #     total_height = int(driver.execute_script("return document.body.scrollHeight"))
-    #     for i in range(1, total_height, 5):
-    #         driver.execute_script("window.scrollTo(0, {});".format(i)) 
-    #     time.sleep(5)
-    #     #Get all html elemnt
-    #     html = driver.page_source
+    for i in range(1,9):
+        #navigate to the url
+        driver = webdriver.Chrome(service=service)
+        driver.get(f'https://shop.adidas.jp/item/?gender=mens&category=wear&group=tops&page={i}')
+        #for smooth scroll
+        driver.execute_script("window.scrollTo(0,document.body.scrollHeight)")
+        total_height = int(driver.execute_script("return document.body.scrollHeight"))
+        for i in range(1, total_height, 5):
+            driver.execute_script("window.scrollTo(0, {});".format(i)) 
+        time.sleep(5)
+        #Get all html elemnt
+        html = driver.page_source
 
-    #     #beautifulsoup 
-    #     soup = bs(html, 'html.parser')
-    #     linkelement=soup.find_all('div', attrs={"class":"articleDisplayCard-children"})
+        #beautifulsoup 
+        soup = bs(html, 'html.parser')
+        linkelement=soup.find_all('div', attrs={"class":"articleDisplayCard-children"})
         
-    #     for ele in linkelement:
-    #         temp=ele.find_all('a')
-    #         url=temp[0]['href']
-    #         getPageInformation(url)
-        getPageInformation('products/HB9386/')
+        for ele in linkelement:
+            temp=ele.find_all('a')
+            url=temp[0]['href']
+            getPageInformation(url)
+            count+=1
+            print(count)
+    # getPageInformation('products/HB9386/')
             
       
 
