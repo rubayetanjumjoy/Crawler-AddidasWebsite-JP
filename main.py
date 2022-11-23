@@ -9,7 +9,7 @@ import openpyxl
 service = Service(executable_path=r"C:\Users\Rubayet Anjum Joy\.cache\selenium\chromedriver\win32\107.0.5304.62\chromedriver.exe")
 
 def getPageInformation(url):
-    try:
+    # try:
         driver = webdriver.Chrome(service=service)
         driver.maximize_window()
         #navigate to the url
@@ -292,9 +292,9 @@ def getPageInformation(url):
         wb.save("Product_Information.xlsx")
         
         driver.quit()
-    except:
-        print(f"Error for product {url}")
-        driver.quit()
+    # except:
+    #     print(f"Error for product {url}")
+    #     driver.quit()
  
 
 if __name__ == "__main__":
@@ -327,30 +327,30 @@ if __name__ == "__main__":
         
     
     #looping through 1 to 8 pages for collecting over 300 products
-    for i in range(1,9):
-        #navigate to the url
-        driver = webdriver.Chrome(service=service)
-        driver.get(f'https://shop.adidas.jp/item/?gender=mens&category=wear&group=tops&page={i}')
-        #for smooth scroll
-        driver.execute_script("window.scrollTo(0,document.body.scrollHeight)")
-        total_height = int(driver.execute_script("return document.body.scrollHeight"))
-        for i in range(1, total_height, 5):
-            driver.execute_script("window.scrollTo(0, {});".format(i)) 
-        time.sleep(5)
-        #Get all html elemnt
-        html = driver.page_source
+    # for i in range(1,9):
+    #     #navigate to the url
+    #     driver = webdriver.Chrome(service=service)
+    #     driver.get(f'https://shop.adidas.jp/item/?gender=mens&category=wear&group=tops&page={i}')
+    #     #for smooth scroll
+    #     driver.execute_script("window.scrollTo(0,document.body.scrollHeight)")
+    #     total_height = int(driver.execute_script("return document.body.scrollHeight"))
+    #     for i in range(1, total_height, 5):
+    #         driver.execute_script("window.scrollTo(0, {});".format(i)) 
+    #     time.sleep(5)
+    #     #Get all html elemnt
+    #     html = driver.page_source
 
-        #beautifulsoup 
-        soup = bs(html, 'html.parser')
-        linkelement=soup.find_all('div', attrs={"class":"articleDisplayCard-children"})
+    #     #beautifulsoup 
+    #     soup = bs(html, 'html.parser')
+    #     linkelement=soup.find_all('div', attrs={"class":"articleDisplayCard-children"})
         
-        for ele in linkelement:
-            temp=ele.find_all('a')
-            url=temp[0]['href']
-            getPageInformation(url)
-            count+=1
-            print(count)
-    # getPageInformation('products/HB9386/')
+    #     for ele in linkelement:
+    #         temp=ele.find_all('a')
+    #         url=temp[0]['href']
+    #         getPageInformation(url)
+    #         count+=1
+    #         print(count)
+    getPageInformation('products/HK6989/')
             
       
 
